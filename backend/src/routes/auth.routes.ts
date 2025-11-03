@@ -23,7 +23,7 @@ export default async function authRoutes(app: FastifyInstance) {
         return reply.status(400).send({ message: "User already exists" });
       }
 
-      // Hash password
+      
       const hashedPassword = await bcrypt.hash(password, 10);
 
       // Insert into DB
