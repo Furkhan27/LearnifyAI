@@ -1,97 +1,99 @@
 import { FastifyInstance } from "fastify";
-import pool from "../config/db";
-import jwt from "fastify-jwt";
 import bcrypt from "bcryptjs";
+import nodemailer from "nodemailer";
+import pool from "../config/db";
 
 export default async function authRoutes(app: FastifyInstance) {
-  // ✅ Register JWT plugin if not already done globally
-  app.register(jwt, { secret: process.env.JWT_SECRET || "defaultsecret" });
-
-  // 🧍‍♂️ User Registration Route
+  // 🧍‍♂️ Register new user
   app.post("/api/register", async (request, reply) => {
     try {
-      const { name, email, password, role, stream } = request.body as {
+      const { name, email, password, role } = request.body as {
         name: string;
         email: string;
         password: string;
         role: string;
-        stream: string;
       };
 
-      // ✅ Validate input
-      if (!name || !email || !password || !role) {
-        return reply.status(400).send({ message: "All required fields must be filled" });
-      }
-
-      // ✅ Check if user already exists
+      // ✅ PostgreSQL uses $1 instead of ?
       const existing = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
       if (existing.rows.length > 0) {
-        return reply.status(400).send({ message: "User already exists" });
+        return reply.status(400).send({ message: "Email already exists" });
       }
 
-      // ✅ Hash the password
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      // ✅ Insert into Supabase
       await pool.query(
-        "INSERT INTO users (name, email, password, role, stream, created_at) VALUES ($1, $2, $3, $4, $5, NOW())",
-        [name, email, hashedPassword, role, stream]
+        "INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4)",
+        [name, email, hashedPassword, role]
       );
 
-      return reply.status(201).send({ message: "User registered successfully" });
-    } catch (err) {
-      console.error("❌ Registration error:", err);
-      return reply.status(500).send({ message: "Server error during registration" });
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+        tls: {
+          rejectUnauthorized: false,
+        },
+      });
+
+      const mailOptions = {
+        from: `"LearnifyAI" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "🎉 Welcome to LearnifyAI!",
+        html: `
+          <div style="font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px;">
+            <div style="max-width: 500px; margin: auto; background: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+              <h2 style="color: #4f46e5;">Welcome, ${name}!</h2>
+              <p>Thank you for signing up for <strong>LearnifyAI</strong> 🎓.</p>
+              <p>Your account has been created successfully — you can now log in and start your personalized learning journey!</p>
+              <br/>
+              <p>Best regards,</p>
+              <p><strong>The LearnifyAI Team</strong></p>
+            </div>
+          </div>
+        `,
+      };
+
+      await transporter.sendMail(mailOptions);
+
+      return reply.send({ message: "Signup successful! You can now log in." });
+    } catch (error: any) {
+      console.error("❌ Registration Error:", error);
+      return reply.status(500).send({ message: error.message || "Server error" });
     }
   });
 
-  // 🔐 User Login Route
+  // 🔐 Login user
   app.post("/api/login", async (request, reply) => {
     try {
-      const { email, password } = request.body as {
-        email: string;
-        password: string;
-      };
+      const { email, password } = request.body as { email: string; password: string };
 
-      if (!email || !password) {
-        return reply.status(400).send({ message: "Email and password are required" });
-      }
-
-      // ✅ Fetch user from DB
-      const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-      const user = result.rows[0];
+      const rows = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+      const user = rows.rows[0];
 
       if (!user) {
-        return reply.status(400).send({ message: "Invalid credentials" });
+        return reply.status(400).send({ message: "User not found" });
       }
 
-      // ✅ Compare passwords
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
-        return reply.status(400).send({ message: "Invalid credentials" });
+        return reply.status(400).send({ message: "Invalid password" });
       }
 
-      // ✅ Generate JWT token
-      const token = app.jwt.sign(
-        { id: user.id, email: user.email, role: user.role },
-        { expiresIn: "7d" }
-      );
-
-      // ✅ Send response
       return reply.send({
         message: "Login successful",
-        token,
         user: {
           id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
-          stream: user.stream,
         },
       });
-    } catch (err) {
-      console.error("❌ Login error:", err);
-      return reply.status(500).send({ message: "Server error during login" });
+    } catch (error: any) {
+      console.error("❌ Login Error:", error);
+      return reply.status(500).send({ message: error.message || "Server error" });
     }
   });
 }

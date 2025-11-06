@@ -1,0 +1,17 @@
+{
+  // Enable Tailwind CSS IntelliSense
+  "tailwindCSS.includeLanguages": {
+    "typescriptreact": "javascript",
+    "html": "html",
+    "css": "css"
+  },
+  "tailwindCSS.emmetCompletions": true,
+
+  // Allow @tailwind directives without warnings
+  "css.lint.unknownAtRules": "ignore",
+
+  // Optional: enable quick suggestions for Tailwind classes
+  "editor.quickSuggestions": {
+    "strings": true
+  }
+}
