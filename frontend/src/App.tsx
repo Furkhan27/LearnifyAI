@@ -1,12 +1,8 @@
 import React from "react";
-import Register from "./pages/Register";
+import AuthPage from "./pages/AuthPage";
 
-function App() {
-  return (
-    <div>
-      <Register />
-    </div>
-  );
-}
+const App: React.FC = () => {
+  return <AuthPage />;
+};
 
 export default App;
