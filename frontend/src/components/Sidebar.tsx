@@ -17,6 +17,7 @@ import {
   ClipboardList,
   Menu,
   X,
+  FileText
 } from "lucide-react";
 
 // ✅ Sidebar Props now accept collapse control from parent
@@ -33,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, isCollapsed, setIsCollapsed }) 
   // ✅ Student & Instructor Link Sets
   const studentLinks = [
     { name: "Dashboard", icon: LayoutDashboard, path: "/student" },
-    { name: "Notes", icon: BookOpen, path: "/student/courses" },
+    { name: "Notes", icon: FileText, path: "/student/notes" },
     { name: "Knowledge Graph", icon: Brain, path: "/knowledge-graph" },
     { name: "AI Quiz Generator", icon: ClipboardList, path: "/student/ai-quiz" },
     { name: "AI Lecture Synthesizer", icon: Lightbulb, path: "/student/lecture-synth" },

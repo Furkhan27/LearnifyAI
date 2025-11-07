@@ -4,7 +4,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import StudentDashboard from "./pages/StudentDashboard";
 import InstructorDashboard from "./pages/InstructorDashboard";
-import KnowledgeGraphPage from "./pages/KnowledgeGraphPage"; // ✅ Use this one
+import KnowledgeGraphPage from "./pages/KnowledgeGraphPage";
+import NotesPage from "./pages/NotesPage";
 import PrivateRoute from "./utils/PrivateRoute";
 
 const App: React.FC = () => {
@@ -17,7 +18,7 @@ const App: React.FC = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* ✅ Protected (Private) Routes */}
+      {/* ✅ Student routes */}
       <Route
         path="/student"
         element={
@@ -26,7 +27,16 @@ const App: React.FC = () => {
           </PrivateRoute>
         }
       />
+      <Route
+        path="/student/notes"
+        element={
+          <PrivateRoute>
+            <NotesPage />
+          </PrivateRoute>
+        }
+      />
 
+      {/* ✅ Instructor routes */}
       <Route
         path="/instructor"
         element={
@@ -36,7 +46,7 @@ const App: React.FC = () => {
         }
       />
 
-      {/* ✅ Knowledge Graph route with Sidebar */}
+      {/* ✅ Knowledge Graph route */}
       <Route
         path="/knowledge-graph"
         element={
@@ -46,7 +56,7 @@ const App: React.FC = () => {
         }
       />
 
-      {/* 404 Fallback */}
+      {/* 404 fallback */}
       <Route
         path="*"
         element={

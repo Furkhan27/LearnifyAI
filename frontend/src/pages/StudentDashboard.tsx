@@ -41,7 +41,7 @@ export default function StudentDashboard() {
 
   const features = [
     { icon: Home, label: "Dashboard", path: "/student" },
-    { icon: Book, label: "Notes", path: "/student/courses" },
+    { icon: Book, label: "Notes", path: "/student/notes" },
     { icon: Brain, label: "Knowledge Graph", path: "/knowledge-graph" },
     { icon: Lightbulb, label: "AI Lecture Synthesizer", path: "/student/lecture-synth" },
     { icon: Bot, label: "AI Study Companion", path: "/student/study-companion" },

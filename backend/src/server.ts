@@ -13,5 +13,8 @@ const start = async () => {
     process.exit(1);
   }
 };
+import notesRoutes from "./routes/notesRoutes";
+app.register(notesRoutes);
+
 
 start();
