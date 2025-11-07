@@ -8,7 +8,7 @@ import {
   VerticalTimelineElement,
 } from "react-vertical-timeline-component";
 import "react-vertical-timeline-component/style.min.css";
-import { Book, Rocket, Brain } from "lucide-react";
+import { Book, Rocket, Brain, Trash2 } from "lucide-react";
 
 cytoscape.use(dagre);
 
@@ -17,27 +17,43 @@ interface NodeData {
   label: string;
 }
 
+const LOCAL_STORAGE_KEY = "learnifyAI_graph_state";
+
 export default function KnowledgeGraph() {
   const cyRef = useRef<Core | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const [nodes, setNodes] = useState<NodeData[]>([
-    { id: "math", label: "Mathematics" },
-    { id: "algebra", label: "Algebra" },
-    { id: "geometry", label: "Geometry" },
-    { id: "ml", label: "Machine Learning" },
-  ]);
-  const [edges, setEdges] = useState([
-    { source: "math", target: "algebra" },
-    { source: "math", target: "geometry" },
-    { source: "algebra", target: "ml" },
-  ]);
+  const [nodes, setNodes] = useState<NodeData[]>([]);
+  const [edges, setEdges] = useState<{ source: string; target: string }[]>([]);
   const [newNode, setNewNode] = useState("");
   const [goal, setGoal] = useState("");
   const [roadmap, setRoadmap] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Initialize Cytoscape once
+  // ✅ Load saved data or initialize default root node
+  useEffect(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      setNodes(parsed.nodes || [{ id: "progress", label: "Progress" }]);
+      setEdges(parsed.edges || []);
+      setRoadmap(parsed.roadmap || []);
+    } else {
+      // Default graph if nothing saved
+      setNodes([{ id: "progress", label: "Progress" }]);
+      setEdges([]);
+    }
+  }, []);
+
+  // ✅ Save every update
+  useEffect(() => {
+    if (nodes.length > 0) {
+      const state = { nodes, edges, roadmap };
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+    }
+  }, [nodes, edges, roadmap]);
+
+  // ✅ Initialize Cytoscape
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -96,7 +112,12 @@ export default function KnowledgeGraph() {
 
     cyRef.current = cy;
 
-    // ✅ Dynamic resizing
+    // ✅ Ensure Progress node appears on first load (even before state sync)
+    cy.add({ data: { id: "progress", label: "Progress" } });
+    cy.center();
+    cy.fit(undefined, 100);
+
+    // Ensure layout resizes dynamically
     const observer = new ResizeObserver(() => {
       cy.resize();
       cy.fit(undefined, 80);
@@ -109,16 +130,28 @@ export default function KnowledgeGraph() {
     };
   }, []);
 
-  // ✅ Update layout dynamically
+  // ✅ Always update the graph visually when nodes or edges change
   useEffect(() => {
     const cy = cyRef.current;
     if (!cy) return;
 
     cy.elements().remove();
-    cy.add([
-      ...nodes.map((n) => ({ data: { id: n.id, label: n.label } })),
-      ...edges.map((e) => ({ data: { source: e.source, target: e.target } })),
-    ]);
+
+// ✅ Always ensure root node exists before any other additions
+const ensuredNodes = nodes.some((n) => n.id === "progress")
+  ? nodes
+  : [{ id: "progress", label: "Progress" }, ...nodes];
+
+cy.add([
+  ...ensuredNodes.map((n) => ({ data: { id: n.id, label: n.label } })),
+  ...edges
+    // ✅ Filter out edges referencing missing nodes
+    .filter((e) =>
+      ensuredNodes.some((n) => n.id === e.source) &&
+      ensuredNodes.some((n) => n.id === e.target)
+    )
+    .map((e) => ({ data: { source: e.source, target: e.target } })),
+]);
 
     const layout = cy.layout({
       name: "dagre",
@@ -129,15 +162,14 @@ export default function KnowledgeGraph() {
       fit: true,
       padding: 100,
     } as any);
-
     layout.run();
-    setTimeout(() => {
-      cy.center();
-      cy.fit(undefined, 100);
-    }, 200);
+
+    // Center graph nicely
+    cy.center();
+    cy.fit(undefined, 100);
   }, [nodes, edges]);
 
-  // ✅ Add Node using Gemini parent suggestion
+  // ✅ Add Node — Ask Gemini which parent fits best
   const handleAddNode = async () => {
     const trimmed = newNode.trim();
     if (!trimmed) return toast.error("Enter a node name");
@@ -159,11 +191,11 @@ export default function KnowledgeGraph() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Gemini failed");
 
-      const parentLabel = data.parent || "Mathematics";
+      const parentLabel = data.parent || "Progress";
       const parentNode = nodes.find(
         (n) => n.label.toLowerCase() === parentLabel.toLowerCase()
       );
-      const parentId = parentNode ? parentNode.id : "math";
+      const parentId = parentNode ? parentNode.id : "progress";
 
       setNodes((prev) => [...prev, { id, label: trimmed }]);
       setEdges((prev) => [...prev, { source: parentId, target: id }]);
@@ -213,7 +245,7 @@ export default function KnowledgeGraph() {
     }
   };
 
-  // ✅ Focus node when clicking a roadmap step
+  // ✅ Focus node on roadmap step click
   const focusNodeForStep = (step: string) => {
     const cy = cyRef.current;
     if (!cy) return;
@@ -226,15 +258,32 @@ export default function KnowledgeGraph() {
     setTimeout(() => node.removeClass("highlighted"), 1000);
   };
 
+  // ✅ Clear all data (nodes, edges, roadmap)
+  const clearGraph = () => {
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    setNodes([{ id: "progress", label: "Progress" }]);
+    setEdges([]);
+    setRoadmap([]);
+
+    const cy = cyRef.current;
+    if (cy) {
+      cy.elements().remove();
+      cy.add({ data: { id: "progress", label: "Progress" } });
+      cy.center();
+      cy.fit(undefined, 100);
+    }
+
+    toast.success("Cleared all data successfully 🧹");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0b0f19] via-[#101828] to-[#1e293b] text-white flex flex-col items-center py-10 px-6">
       <Toaster position="top-center" />
-
       <h1 className="text-3xl font-semibold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400 flex items-center gap-2">
         💭 Knowledge Graph Memory System
       </h1>
 
-      {/* Graph container */}
+      {/* Graph Container */}
       <motion.div
         ref={containerRef}
         className="w-full max-w-6xl h-[500px] rounded-2xl border border-white/20 backdrop-blur-xl bg-white/10 shadow-2xl mb-8 transition-all duration-500 hover:shadow-indigo-600/40"
@@ -242,7 +291,7 @@ export default function KnowledgeGraph() {
         animate={{ opacity: 1 }}
       />
 
-      {/* Node input */}
+      {/* Input & Buttons */}
       <div className="flex flex-col sm:flex-row items-center gap-4 mb-8">
         <input
           type="text"
@@ -251,17 +300,29 @@ export default function KnowledgeGraph() {
           onChange={(e) => setNewNode(e.target.value)}
           className="px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-400 transition-all w-64"
         />
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={handleAddNode}
-          className="px-5 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 font-semibold transition-all shadow-md hover:shadow-indigo-400/40"
-        >
-          ➕ Add Node
-        </motion.button>
+        <div className="flex gap-3">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={handleAddNode}
+            className="px-5 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 font-semibold transition-all shadow-md hover:shadow-indigo-400/40"
+          >
+            ➕ Add Node
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={clearGraph}
+            className="px-4 py-3 rounded-lg bg-red-600 hover:bg-red-500 font-semibold transition-all shadow-md hover:shadow-red-400/40 flex items-center gap-2"
+          >
+            <Trash2 size={16} /> Clear
+          </motion.button>
+        </div>
       </div>
 
-      {/* Roadmap section */}
+      <div className="w-1/2 h-[1px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent my-8 opacity-50"></div>
+
+      {/* Roadmap Section */}
       <div className="w-full max-w-4xl bg-white/10 backdrop-blur-xl border border-white/10 p-6 rounded-2xl shadow-lg">
         <h2 className="text-xl font-semibold mb-4 text-indigo-300">
           🎯 AI-Powered Roadmap Generator
@@ -309,7 +370,9 @@ export default function KnowledgeGraph() {
                   <h4 className="text-indigo-300 font-semibold">
                     Step {i + 1}
                   </h4>
-                  <p className="hover:text-cyan-300 transition-colors">{step}</p>
+                  <p className="hover:text-cyan-300 transition-colors">
+                    {step}
+                  </p>
                 </div>
               </VerticalTimelineElement>
             ))}

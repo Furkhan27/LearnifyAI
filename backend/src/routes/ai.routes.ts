@@ -4,8 +4,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// ✅ Correct initialization for @google/generative-ai
-const ai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+// ✅ Initialize Gemini API client
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export default async function aiRoutes(app: FastifyInstance) {
   // ----------------------------------------------------
@@ -18,7 +18,7 @@ export default async function aiRoutes(app: FastifyInstance) {
         return reply.status(400).send({ message: "Goal is required" });
       }
 
-      const model = ai.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
       const prompt = `
         You are an expert AI mentor.
@@ -54,22 +54,18 @@ export default async function aiRoutes(app: FastifyInstance) {
         existingNodes: string[];
       };
 
-      if (!newNode || !existingNodes || existingNodes.length === 0) {
+      if (!newNode || !existingNodes || !Array.isArray(existingNodes)) {
         return reply.status(400).send({ message: "Invalid input" });
       }
 
-      const model = ai.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
       const prompt = `
-      You are an intelligent Knowledge Graph assistant.
-      You are given a list of existing learning topics:
-
-      ${existingNodes.join(", ")}
-
-      Now, analyze this list and decide which topic is the most logical parent
-      for the new concept: "${newNode}".
-
-      Return ONLY the parent topic name exactly as it appears in the list — no extra words or punctuation.
+        You are an intelligent knowledge graph assistant.
+        You are given a list of existing nodes: [${existingNodes.join(", ")}].
+        Determine which one is the most appropriate parent node for the new topic "${newNode}".
+        If no suitable parent exists, reply exactly with "Progress".
+        Respond ONLY with the parent node name — no punctuation or explanation.
       `;
 
       const result = await model.generateContent(prompt);
@@ -77,7 +73,7 @@ export default async function aiRoutes(app: FastifyInstance) {
 
       console.log(`🧩 Suggested parent for "${newNode}": ${parent}`);
 
-      return reply.send({ parent });
+      reply.send({ parent: parent || "Progress" });
     } catch (error: any) {
       console.error("❌ Gemini Parent Suggestion Error:", error);
       reply.status(500).send({
