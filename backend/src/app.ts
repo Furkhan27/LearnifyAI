@@ -1,22 +1,16 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
-import pool from "./config/db";
-import userRoutes from "./routes/users.routes";
-import authRoutes from "./routes/auth.routes";
+import authRoutes from "./routes/auth.routes.js";
+import aiRoutes from "./routes/ai.routes.js";
+import graphRoutes from "./routes/graph.routes.js";
+import pool from "./config/db.js";
 
-const app = Fastify();
+const app = Fastify({ logger: true });
 
-// ✅ Allow frontend access
-app.register(cors, {
-  origin: "*", // You can later restrict this to http://localhost:3000
-});
+await app.register(cors, { origin: "*" });
+await app.register(authRoutes);
+await app.register(aiRoutes);
+await app.register(graphRoutes);
 
-app.get("/", async () => {
-  const result = await pool.query("SELECT NOW()");
-  return { message: "Learnify AI backend connected!", time: result.rows[0].now };
-});
-
-app.register(userRoutes);
-app.register(authRoutes);
-
+console.log("🧠 Fastify initialized successfully");
 export default app;

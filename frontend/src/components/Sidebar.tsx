@@ -1,43 +1,149 @@
 import React from "react";
-import { BookOpen, PieChart, TrendingUp, Settings, Calendar } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+import {
+  LayoutDashboard,
+  BookOpen,
+  Brain,
+  Lightbulb,
+  GraduationCap,
+  Bot,
+  Repeat,
+  NotebookPen,
+  Settings,
+  LogOut,
+  Users,
+  Eye,
+  ClipboardList,
+  Menu,
+  X,
+} from "lucide-react";
 
-export default function Sidebar(): JSX.Element {
-  const nav = [
-    { id: "overview", label: "Overview", icon: <PieChart size={16} /> },
-    { id: "mycourses", label: "My Courses", icon: <BookOpen size={16} /> },
-    { id: "predictions", label: "Predictions", icon: <TrendingUp size={16} /> },
-    { id: "schedule", label: "Schedule", icon: <Calendar size={16} /> },
-    { id: "settings", label: "Settings", icon: <Settings size={16} /> },
+// ✅ Sidebar Props now accept collapse control from parent
+interface SidebarProps {
+  role: "student" | "instructor";
+  isCollapsed: boolean;
+  setIsCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ role, isCollapsed, setIsCollapsed }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // ✅ Student & Instructor Link Sets
+  const studentLinks = [
+    { name: "Dashboard", icon: LayoutDashboard, path: "/student" },
+    { name: "Courses", icon: BookOpen, path: "/student/courses" },
+    { name: "Knowledge Graph", icon: Brain, path: "/knowledge-graph" },
+    { name: "AI Quiz Generator", icon: ClipboardList, path: "/student/ai-quiz" },
+    { name: "AI Lecture Synthesizer", icon: Lightbulb, path: "/student/lecture-synth" },
+    { name: "AI Study Companion", icon: Bot, path: "/student/study-companion" },
+    { name: "Smart Revision Engine", icon: Repeat, path: "/student/revision" },
+    { name: "Progress Journal", icon: NotebookPen, path: "/student/journal" },
+    { name: "Settings", icon: Settings, path: "/student/settings" },
   ];
 
+  const instructorLinks = [
+    { name: "Dashboard", icon: LayoutDashboard, path: "/instructor" },
+    { name: "Manage Courses", icon: BookOpen, path: "/instructor/manage-courses" },
+    { name: "Vision AI", icon: Eye, path: "/instructor/vision-ai" },
+    { name: "Student Insights", icon: Users, path: "/instructor/insights" },
+    { name: "AI Assessment Tools", icon: ClipboardList, path: "/instructor/assessments" },
+    { name: "Settings", icon: Settings, path: "/instructor/settings" },
+  ];
+
+  const links = role === "student" ? studentLinks : instructorLinks;
+
+  // ✅ Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
   return (
-    <aside className="p-4 bg-white/4 backdrop-blur-xl border border-white/8 rounded-2xl shadow-lg">
-      <div className="mb-4">
-        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white font-bold">L</div>
-        <div className="mt-3">
-          <div className="text-sm font-semibold">LearnifyAI</div>
-          <div className="text-xs text-slate-300">Student</div>
-        </div>
-      </div>
-
-      <nav className="flex flex-col gap-2">
-        {nav.map((n) => (
-          <button
-            key={n.id}
-            className="flex items-center gap-3 text-sm px-3 py-2 rounded-lg hover:bg-white/6 transition"
+    <motion.aside
+      initial={{ width: "260px" }}
+      animate={{
+        width: isCollapsed ? "80px" : "260px",
+      }}
+      transition={{ duration: 0.4, ease: "easeInOut" }}
+      className="h-screen bg-white/10 backdrop-blur-2xl border-r border-white/20 text-white fixed left-0 top-0 flex flex-col justify-between shadow-xl overflow-hidden z-50"
+    >
+      {/* Header */}
+      <div>
+        <div className="flex items-center justify-between px-4 py-5 border-b border-white/10">
+          <div
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() =>
+              navigate(role === "student" ? "/student" : "/instructor")
+            }
           >
-            <span className="text-indigo-300">{n.icon}</span>
-            <span className="text-slate-100">{n.label}</span>
-          </button>
-        ))}
-      </nav>
+            <div className="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl shadow-md">
+              <GraduationCap size={22} />
+            </div>
 
-      <div className="mt-6">
-        <div className="text-xs text-slate-400">Recent Trend</div>
-        <div className="mt-2 h-20 w-full bg-gradient-to-r from-indigo-500/10 to-sky-500/8 rounded-lg flex items-center justify-center text-xs text-slate-300">
-          Learning momentum up 6% this week
+            {/* Sidebar Title (hidden when collapsed) */}
+            {!isCollapsed && (
+              <motion.h1
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="text-lg font-semibold tracking-wide text-indigo-400"
+              >
+                LearnifyAI
+              </motion.h1>
+            )}
+          </div>
+
+          {/* Collapse / Expand Toggle Button */}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="text-gray-300 hover:text-indigo-400 transition"
+          >
+            {isCollapsed ? <Menu size={20} /> : <X size={20} />}
+          </button>
         </div>
+
+        {/* Navigation Links */}
+        <nav className="mt-4 px-3 overflow-y-auto scrollbar-none flex-1">
+          {links.map(({ name, icon: Icon, path }) => {
+            const isActive = location.pathname === path;
+            return (
+              <motion.div
+                key={name}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => navigate(path)}
+                className={`my-1 flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-all duration-300 ${
+                  isActive
+                    ? "bg-indigo-600/80 text-white shadow-md"
+                    : "hover:bg-white/10 text-gray-300"
+                }`}
+              >
+                <Icon size={20} className="flex-shrink-0" />
+                {!isCollapsed && (
+                  <span className="whitespace-nowrap font-medium">{name}</span>
+                )}
+              </motion.div>
+            );
+          })}
+        </nav>
       </div>
-    </aside>
+
+      {/* Logout Button */}
+      <div className="border-t border-white/10 p-4">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-2 bg-red-600/80 hover:bg-red-500 text-white py-2 rounded-lg transition-all"
+        >
+          <LogOut size={18} />
+          {!isCollapsed && <span>Logout</span>}
+        </motion.button>
+      </div>
+    </motion.aside>
   );
-}
+};
+
+export default Sidebar;

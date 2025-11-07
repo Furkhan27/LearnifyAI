@@ -5,12 +5,17 @@ dotenv.config();
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ssl:
+    process.env.NODE_ENV === "production"
+      ? { rejectUnauthorized: false }
+      : false,
 });
 
-pool
-  .connect()
-  .then(() => console.log("🗄️ Database connected successfully"))
-  .catch((err: Error) => console.error("❌ Database connection error:", err));
+// ✅ Optional: listen for unexpected errors instead of crashing
+pool.on("error", (err) => {
+  console.error("❌ Unexpected PostgreSQL error:", err);
+});
+
+console.log("🗄️ PostgreSQL pool initialized successfully");
 
 export default pool;
