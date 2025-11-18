@@ -1,0 +1,5 @@
+
+.env
+backend/credentials/service-account.json
+backend/credentials/
+*.json

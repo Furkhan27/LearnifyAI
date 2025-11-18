@@ -1,0 +1,140 @@
+/* 🌌 LearnifyAI Quiz Page - Purple-Blue Gradient + Glassmorphic Design */
+
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #3b1e8e, #1b0f63, #1a47b8);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+  color: #fff;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 🧊 Main Quiz Container */
+.quizpage-container {
+  max-width: 750px;
+  margin: 80px auto;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  padding: 40px 50px;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.quizpage-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 45px rgba(255, 255, 255, 0.25);
+}
+
+/* 🧭 Quiz Header */
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  font-size: 18px;
+  color: #e0d9ff;
+  font-weight: 600;
+}
+
+/* ⏱️ Timer */
+.timer {
+  color: #ff7b7b;
+  font-weight: bold;
+}
+
+/* ❓ Question Box */
+.quiz-question-box h3 {
+  font-size: 26px;
+  margin-bottom: 25px;
+  color: #e5dcff;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
+}
+
+/* 🧩 Options */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 35px;
+}
+
+.option-button {
+  padding: 14px 20px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  font-size: 17px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.option-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: #a78bfa;
+  transform: translateY(-3px);
+}
+
+.option-button.selected {
+  background: linear-gradient(135deg, #8b6ef7, #a78bfa);
+  border-color: #c3a7ff;
+  box-shadow: 0 0 15px rgba(171, 143, 255, 0.4);
+}
+
+/* ⏩ Navigation Buttons */
+.next-button, .prev-button {
+  background: linear-gradient(135deg, #8b6ef7, #a78bfa);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  font-size: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 6px 18px rgba(139, 110, 247, 0.35);
+}
+
+.next-button:hover, .prev-button:hover {
+  background: linear-gradient(135deg, #a78bfa, #c3a7ff);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(139, 110, 247, 0.45);
+}
+
+/* ⬅️➡️ Button Layout */
+.next-prev-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+/* 📱 Responsive Design */
+@media (max-width: 700px) {
+  .quizpage-container {
+    padding: 25px 20px;
+  }
+
+  .quiz-question-box h3 {
+    font-size: 22px;
+  }
+
+  .option-button {
+    font-size: 15px;
+  }
+
+  .next-button, .prev-button {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}

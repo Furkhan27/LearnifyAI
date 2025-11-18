@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: white;
+  min-height: 100vh;
+}
+
+/* Glassmorphism tweaks */
+.bg-glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Smooth focus glow */
+input:focus {
+  box-shadow: 0 0 12px rgba(79, 70, 229, 0.4);
+}
+
+/* Button transitions */
+button {
+  transition: all 0.2s ease;
+}

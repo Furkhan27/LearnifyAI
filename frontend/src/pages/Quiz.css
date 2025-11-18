@@ -1,0 +1,145 @@
+/* 🌙 Quiz.css — Purple Indigo Glass Theme */
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", "Segoe UI", sans-serif;
+  background: linear-gradient(135deg, #0b021f, #1a103d, #2a165e);
+  color: #e5e0ff;
+}
+
+/* Container */
+.quizpref-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  background: radial-gradient(circle at top left, #1e1148, #0b021f);
+}
+
+/* Card Box */
+.quizpref-box {
+  background: rgba(30, 15, 65, 0.55);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(180, 160, 255, 0.25);
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
+  padding: 40px;
+  border-radius: 18px;
+  max-width: 500px;
+  width: 100%;
+  animation: fadeIn 0.6s ease-in-out;
+  transition: all 0.3s ease-in-out;
+}
+
+.quizpref-box:hover {
+  box-shadow: 0 0 40px rgba(168, 85, 247, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Title */
+.quizpref-box h2 {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 28px;
+  background: linear-gradient(90deg, #a78bfa, #c084fc, #e879f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Form Layout */
+.quizpref-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Input Container */
+.input-icon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(15, 6, 40, 0.65);
+  border: 1px solid rgba(180, 160, 255, 0.25);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-icon:hover {
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+}
+
+.input-icon svg {
+  color: #c084fc;
+  font-size: 1.2rem;
+}
+
+/* Inputs and Selects */
+.input-icon input,
+.input-icon select {
+  flex: 1;
+  border: none;
+  font-size: 1rem;
+  outline: none;
+  color: #f1e8ff;
+  background: transparent;
+}
+
+.input-icon input::placeholder {
+  color: #bcaefc;
+}
+
+/* Focus Effect */
+.input-icon input:focus,
+.input-icon select:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Button */
+.quizpref-button {
+  background: linear-gradient(90deg, #8b5cf6, #a855f7, #c084fc);
+  color: white;
+  border: none;
+  padding: 12px 0;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.quizpref-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(167, 139, 250, 0.45);
+}
+
+.quizpref-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .quizpref-box {
+    padding: 30px 20px;
+  }
+
+  .quizpref-box h2 {
+    font-size: 1.6rem;
+  }
+}
