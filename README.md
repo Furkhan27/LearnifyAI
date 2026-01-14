@@ -113,14 +113,9 @@ The system supports **web and mobile platforms**, making it accessible in both u
 
 ---
 
-## Authors
+## Author
 
 - **Mohammed Furqan Siddiq** 
-- **Syed Mohammed Faizan**  
-- **Mohammed Haseeb Ali**  
-- **Mohammed Abdul Raafay**  
-- **Mohd Ishaq Khalid**  
-- **Dr. M. Upendra Kumar**
 
 Department of Computer Science & Engineering  
 Muffakham Jah College of Engineering and Technology (MJCET), Hyderabad
